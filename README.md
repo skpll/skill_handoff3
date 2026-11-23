@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-blue.svg)](https://agentskills.io)
-[![Version](https://img.shields.io/badge/version-1.0.6-green.svg)](SKILL.md)
+[![Version](https://img.shields.io/badge/version-1.0.7-green.svg)](SKILL.md)
+[![Ko-fi](https://img.shields.io/badge/Sponsor-Ko--fi-FF5E5B.svg)](https://ko-fi.com/skpll)
 [![Sponsor](https://img.shields.io/badge/Sponsor-IFDIAN-946ce6.svg)](https://ifdian.net/a/handoff3)
-[![Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B.svg)](https://ko-fi.com/skpll)
 
 [English](#english) · [中文说明](#中文说明)
 
@@ -158,12 +158,12 @@ MIT — see [LICENSE](LICENSE).
 
 ## 中文说明
 
-跨 agent 的会话记忆与交接技能。日常顺手记账，交接时一键成稿。可以辅助你记下关键决策、内容、事件等信息，以顺利交接给其他agent、新的会话窗口、项目组的其他成员，或者半年后的自己。
+跨 agent 的会话记忆与交接技能。日常顺手记账，交接时一键成稿。可以辅助你记下关键决策、内容、事件等信息，以顺利交接给其他 agent、新的会话窗口、项目组的其他成员，或者半年后的自己。
 
-本技能不是竞争或者排他式的技能，你可以自由和agent自身的记忆系统混合使用、交叉验证，或自由拓展日报、总结等自定义功能。
+本技能不与其他技能竞争，也不排他：你可以自由和 agent 自身的记忆系统混合使用、交叉验证，或自由拓展日报、总结等自定义功能。
 
 - **轻负担**：记忆流程只用宿主自带的文件读写与 grep，无配置层、无外部工具。
-- **跨 agent**：各agent都有对应的 adapter（**目前未适配完成，但不影响使用**），主流程不硬编码任何一家的私有格式。
+- **跨 agent**：各 agent 都有对应的 adapter（**目前未适配完成，但不影响使用**），主流程不硬编码任何一家的私有格式。
 - **本地数据**：默认写项目内 `.handoff3/`，可指向外部记忆库；明文 Markdown，可读可 diff 可入库。
 
 ### 为什么技能文件用中文
@@ -174,7 +174,7 @@ MIT — see [LICENSE](LICENSE).
 - **稳定**：单一真源。不会出现中英两个版本各自漂移、同一条规则两种行为。
 - **性能**：技能文件每轮都进上下文，做成双语等于每轮多烧 token，却不会让技能更强。
 - **兼容多语言**：模型天然多语言，读中文指令和英文指令的执行效果一样，指令语言不影响结果。需要别的语言，让 AI 翻译即可。
-- **强制翻译**：如果你强烈希望技能文件以你所指定的语言落盘，你可以让AI翻译SKILL.md和references中的文件。
+- **强制翻译**：如果你强烈希望技能文件以你所指定的语言落盘，可以让 AI 翻译 SKILL.md 和 references 中的文件。
 
 ### 快速使用
 
@@ -187,7 +187,7 @@ MIT — see [LICENSE](LICENSE).
 
 `/handoff3 基于记忆，当前解决的问题`
 
-`/handoff3 基于记忆，和agent的记忆，给我规划下周每日任务`
+`/handoff3 基于记忆，和 agent 的记忆，给我规划下周每日任务`
 
 详情参见 [用法](#用法)。
 
@@ -196,8 +196,8 @@ MIT — see [LICENSE](LICENSE).
 其实这个技能已经迭代到第三版。
 
 - **第一版 · 交接时解析**：在交接时把记录整份读进内存、切主题组、加权打分、按预算裁剪，只把结构化结论回传模型。但脚本重、模型轻，**复杂度全压在工程侧**。
-- **第二版 · 交接时提炼**：把提炼改成八层单向流水线，层间只传纯数据，token 硬预算精确到 1500 / 4000。但在 77 MB 真实记录上，**自检 36 项全绿，产物可用行却持续下降**。
-- **第三版 · 平时记账**：每轮产生实质结论时由模型自己写一条带原文引用的记忆，交接时只读几个 `mem_` 文件成稿。减轻本地语义解析的基础上，可读性和可用性得到大幅度提升。
+- **第二版 · 交接时提炼**：把提炼改成八层单向流水线，层间只传纯数据，token 硬预算精确到 1500 / 4000。但在 77 MB 真实记录上，**自检 36 项全绿，产物可用性却持续下降**。
+- **第三版 · 平时记账**：每轮产生实质结论时由模型自己写一条带原文引用的记忆，交接时只读几个 `mem_` 文件成稿。在减少本地语义解析的同时，可读性与可用性大幅提升。
 
 第一版和第二版在语义解析、架构设计和工程参考方面仍具价值，会继续更新。但目前综合实用性非常差，暂不开源。
 
@@ -255,7 +255,7 @@ MIT — see [LICENSE](LICENSE).
 
 ### 自检六个子步骤
 
-六步固定全执行（S1 结构 / S2 命名称 / S3 归属 / S4 可达性〔静默期不算沉淀〕 / S5 覆盖 / S6 孤儿），判据与修法见 [SKILL.md](SKILL.md) §6 与 `references/selfcheck.md`。自检的写操作本就受限：格式与状态词可跨文件，条目内容只改自己会话的文件。
+六步固定全执行（S1 结构 / S2 命名 / S3 归属 / S4 可达性〔静默期不算沉淀〕 / S5 覆盖 / S6 缺档），判据与修法见 [SKILL.md](SKILL.md) §6 与 `references/selfcheck.md`。自检的写操作本就受限：格式与状态词可跨文件，条目内容只改自己会话的文件。
 
 ### 文件
 

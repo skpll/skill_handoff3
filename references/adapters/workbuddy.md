@@ -83,13 +83,13 @@
 ~/.workbuddy-ai/projects/  （WorkBuddy AI）
 ```
 
-S6 孤儿扫描只扫**当前 agent 的那个根**，不扫另一个（别人的会话不归我管），更不扫全盘。
+S6 缺档扫描只扫**当前 agent 的那个根**，不扫另一个（别人的会话不归我管），更不扫全盘。
 
 ### 3.2 `user_turn_extract`
 
 即 §2 的规则。补历史时用它从命中行里取原话。
 
-## 4. 平台红利与不采用的特性
+## 4. 平台能力与不采用的特性
 
 ### 4.1 实际用到的
 
@@ -99,7 +99,7 @@ S6 孤儿扫描只扫**当前 agent 的那个根**，不扫另一个（别人的
 
 ### 4.2 明确不用的平台特性（防复发）
 
-`hooks`（受 admin-trusted 闸门约束）、`context: fork`（在独立 subagent 里跑、**不访问对话历史**，与「读本轮做记忆」互斥）、内联 shell 命令（是脚本，破坏跨 agent 通用）、变量占位符 `${CODEBUDDY_SESSION_ID}`（未设置时原样保留不替换，跨宿主会喂字面量噪音）、`skillOverrides`（CLI 功能、桌面端未验证）、`agent_created`（只是「允许自动改删」标记，与触发无关）——一律不用。
+`hooks`（受 admin-trusted 闸门约束）、`context: fork`（在独立 subagent 里跑、**不访问对话历史**，与「读本轮做记忆」互斥）、内联 shell 命令（是脚本，破坏跨 agent 通用）、变量占位符 `${CODEBUDDY_SESSION_ID}`（未设置时原样保留、不被替换，跨宿主会把字面量原样塞进上下文）、`skillOverrides`（CLI 功能、桌面端未验证）、`agent_created`（只是「允许自动改删」标记，与触发无关）——一律不用。
 
 ### 4.3 三套规范别混
 
