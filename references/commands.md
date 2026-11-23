@@ -15,7 +15,7 @@
 
 | 动作 | 调用形式 | 触发词（中） | 触发词（英） | `/handoff3` 前缀 | 行为一句话 | 详规 |
 |---|---|---|---|---|---|---|
-| ① 交接 | `/handoff3`（裸） | 交接 / 生成 / 报告 / 文档 / 归档 / 上下文接不上 / 重建视图 / 重建记忆汇总 / 刷新全量记忆 / handoff | handoff / handover / wrap up / report / archive / lost context / rebuild | 否（裸即交接） | **含自检六步** → 补缺口 → 重建视图 → 出报告 → 打开库文件夹，唯一写报告的动作 | SKILL.md §5 |
+| ① 交接 | `/handoff3`（裸） | 交接 / 生成 / 报告 / 文档 / 归档 / 上下文接不上 / 重建视图 / 重建记忆汇总 / 刷新全量记忆 / handoff | handoff / handover / wrap up / report / archive / lost context / rebuild | 否（裸即交接） | **含自检六步** → 补缺口 → 重建视图 → 出报告，唯一写报告的动作 | SKILL.md §5 |
 | ② 自检 | `自检` 或 `/handoff3 自检` | 自检 / 检查记忆 / 记忆体检 / 修复记忆文件 | self-check / check memory / memory check / memory repair | 否 | 六步体检并修复自己会话的 `mem_` 文件，只体检不出报告（交接已含，日常不必单独发） | selfcheck.md |
 | ③ 基于记忆 | `/handoff3 基于记忆 [想说的话]` | 基于记忆 / 按记忆 / 根据记忆 | from memory / based on memory | **是** | 刷新视图后读它作答，不写报告 | SKILL.md §3 |
 | ④ 帮助 | `帮助` 或 `/handoff3 帮助` | 帮助 | help | 否 | 按固定文本列用法，不读写文件 | SKILL.md §3.1 |

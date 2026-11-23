@@ -93,7 +93,7 @@ For finer control — e.g. an audit without a report, or asking straight from me
 
 | Action | How to trigger | What it does |
 |---|---|---|
-| Handoff | Bare `/handoff3`, or say handoff / handover / wrap up / report / archive / lost context / rebuild … | **Includes all six self-check steps** → fill gaps → rebuild view → render report → open the library folder. **The only action that writes a report** — this is all you need day to day |
+| Handoff | Bare `/handoff3`, or say handoff / handover / wrap up / report / archive / lost context / rebuild … | **Includes all six self-check steps** → fill gaps → rebuild view → render report. **The only action that writes a report** — this is all you need day to day |
 | Self-check | self-check / check memory / memory check / memory repair … | Six-step audit and repair, no report; handoff already includes it, use alone only for audit-without-report |
 | From memory | **Requires** `/handoff3` prefix: from memory / based on memory … | Refreshes the view if stale, then answers from it; writes no report |
 | Help | help | Prints the built-in usage guide, reads/writes no files |
@@ -237,7 +237,7 @@ MIT — see [LICENSE](LICENSE).
 
 | 动作 | 怎么触发 | 作用 |
 |---|---|---|
-| 交接 | 裸调用 `/handoff3`，或说 交接 / 生成 / 报告 / 归档 / 上下文接不上 … | **含自检六步** → 补缺口 → 重建视图 → 出报告 → 打开库文件夹。**唯一写报告的动作**，日常只需这一条 |
+| 交接 | 裸调用 `/handoff3`，或说 交接 / 生成 / 报告 / 归档 / 上下文接不上 … | **含自检六步** → 补缺口 → 重建视图 → 出报告。**唯一写报告的动作**，日常只需这一条 |
 | 自检 | 自检 / 检查记忆 / 修复记忆文件 … | 六步体检并修复记忆文件，不出报告；交接已含，只体检不出稿时才单独用 |
 | 基于记忆 | **须** `/handoff3` 前缀：基于记忆 / 按记忆 … | 刷新视图后读它作答，不写报告 |
 | 帮助 | 帮助 / help | 列出用法，不读写文件 |
