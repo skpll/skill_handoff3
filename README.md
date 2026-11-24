@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-blue.svg)](https://agentskills.io)
-[![Version](https://img.shields.io/badge/version-1.0.7-green.svg)](SKILL.md)
+[![Version](https://img.shields.io/badge/version-1.0.8-green.svg)](SKILL.md)
 [![Ko-fi](https://img.shields.io/badge/Sponsor-Ko--fi-FF5E5B.svg)](https://ko-fi.com/skpll)
 [![Sponsor](https://img.shields.io/badge/Sponsor-IFDIAN-946ce6.svg)](https://ifdian.net/a/handoff3)
 
@@ -14,9 +14,13 @@
 
 ## English
 
+**Any questions, suggestions, or feedback while using it? Welcome to [join the official QQ group 801546098](https://qm.qq.com/q/sLZU77gjni)**.
+
 Cross-agent incremental session memory and handoff. Bookmark as you go; render a ready-to-use report with one command when you hand off. It helps you capture key decisions, content, events and so on, so you can hand off cleanly to another agent, a fresh context window, a teammate, or your future self six months down the road.
 
 This skill isn't mutually exclusive — feel free to mix it with your agent's own memory system, cross-check the two, or extend it into custom features like daily reports and summaries.
+
+This skill uses progressive disclosure and loads files on demand — day-to-day use never pulls every file into context at once.
 
 - **Lightweight**: the memory flow uses only the host's built-in file read/write and grep — no config layer, no external tools.
 - **Cross-agent**: every agent has a corresponding adapter (**adaptation not yet complete, but it does not affect usage**); the main flow hardcodes no vendor's private format.
@@ -75,7 +79,7 @@ project/.handoff3/
 ├── memory/             source of truth — one file per session
 │   └── mem_<agent>_<session>.md
 ├── handoff_memory.md   full view, rebuilt from memory/, refreshable any time
-├── handoff_patches.md  criteria sentences — the only evolving part, appended only after you answer "yes"
+├── handoff_patches.md  criteria sentences — rule source, loaded every turn (skip if absent); appended only after you answer "yes"
 └── handoff_report.md   artifact — the handoff report
 ```
 
@@ -84,7 +88,7 @@ What each file is for:
 - `memory/mem_<agent>_<session>.md`: **source of truth**, one file per session, append-only and never rewritten; turns into read-only frozen memory once the session is deleted or archived.
 - `handoff_memory.md`: **full view**, rebuilt from `memory/` at handoff and refreshable any time; this is what "from memory" reads.
 - `handoff_report.md`: **handoff artifact**, written only by the handoff action, for whoever picks up next.
-- `handoff_patches.md`: **criteria sentences**, the only part of the skill that evolves — a checkable rule is appended only when you point out a problem and answer "yes".
+- `handoff_patches.md`: **criteria sentences rule source** (loaded every turn, not an archive; skipped when absent) — the only part of the skill that evolves; a checkable rule is appended only when you point out a problem and answer "yes".
 - `root.txt`: optional single absolute path to an external library; a wrong path stops with an error, it never falls back to creating a new local one.
 
 #### Fine-grained calls
@@ -94,18 +98,19 @@ For finer control — e.g. an audit without a report, or asking straight from me
 | Action | How to trigger | What it does |
 |---|---|---|
 | Handoff | Bare `/handoff3`, or say handoff / handover / wrap up / report / archive / lost context / rebuild … | **Includes all six self-check steps** → fill gaps → rebuild view → render report. **The only action that writes a report** — this is all you need day to day |
+| Update memory | update memory / refresh memory / sync memory … | **Only reads/writes the current session's own `mem_` file**: create if missing, fill gaps, repair structure in place; touches no other file, runs no self-check, rebuilds no view, writes no report. Use when the footer fails or you suspect that one file is broken or missing |
 | Self-check | self-check / check memory / memory check / memory repair … | Six-step audit and repair, no report; handoff already includes it, use alone only for audit-without-report |
 | From memory | **Requires** `/handoff3` prefix: from memory / based on memory … | Refreshes the view if stale, then answers from it; writes no report |
 | Help | help | Prints the built-in usage guide, reads/writes no files |
 
-These actions are **conventions, not hard rules**. You may invoke the skill any way you like — plain natural language included. Just keep the phrasing **colloquial and consistent**: stick to stable trigger words and vocabulary (e.g. "handoff", "self-check", "from memory") rather than constantly inventing new ones, so the skill recognizes your intent reliably.
+These actions are **conventions, not hard rules**. You may invoke the skill any way you like — plain natural language included. Just keep the phrasing **colloquial and consistent**: stick to stable trigger words and vocabulary (e.g. "handoff", "update memory", "self-check", "from memory") rather than constantly inventing new ones, so the skill recognizes your intent reliably.
 
 ### End-of-reply signal
 
 The **last** reply to the user each turn ends with one of two signals; missing either means the rule did not run:
 
-- Memory was written → footer (`This turn's key points have been added to handoff3 memory:` + absolute file path + token readout)
-- No memory was written → `No memory was written this turn; handoff3 did not change any memory file.` (**this is the default**, use it when unsure)
+- A `mem_` file was written or repaired → footer (`This turn's key points have been added to handoff3 memory:` + absolute file path + token readout); "update memory" repairing a file counts too
+- No `mem_` file was touched → `No memory was written this turn; handoff3 did not change any memory file.` (**this is the default**, use it when unsure)
 
 Only the last reply counts: process chatter and transitional one-liners between tool calls are out of scope.
 
@@ -118,7 +123,7 @@ All six always run: S1 structure / S2 naming / S3 ownership / S4 reachability (a
 ```
 SKILL.md                              main file: rules, actions, handoff flow
 references/
-├── commands.md                       the four actions: forms, triggers, prefix rules, boundaries
+├── commands.md                       the five actions: forms, triggers, prefix rules, boundaries
 ├── schema.md                         naming & parsing, file sources, entry format, gap criteria, legacy compat
 ├── types.md                          eight semantic categories, counterexamples, conflict priority
 ├── template.md                       handoff report skeleton & fixed gap-section format
@@ -158,9 +163,13 @@ MIT — see [LICENSE](LICENSE).
 
 ## 中文说明
 
+**使用中有任何问题、建议或反馈，欢迎[加入官方QQ群 801546098](https://qm.qq.com/q/sLZU77gjni)**。
+
 跨 agent 的会话记忆与交接技能。日常顺手记账，交接时一键成稿。可以辅助你记下关键决策、内容、事件等信息，以顺利交接给其他 agent、新的会话窗口、项目组的其他成员，或者半年后的自己。
 
 本技能不与其他技能竞争，也不排他：你可以自由和 agent 自身的记忆系统混合使用、交叉验证，或自由拓展日报、总结等自定义功能。
+
+本技能使用渐进披露、按需加载的方式，日常使用时不会一次性加载进全部文件。
 
 - **轻负担**：记忆流程只用宿主自带的文件读写与 grep，无配置层、无外部工具。
 - **跨 agent**：各 agent 都有对应的 adapter（**目前未适配完成，但不影响使用**），主流程不硬编码任何一家的私有格式。
@@ -219,7 +228,7 @@ MIT — see [LICENSE](LICENSE).
 ├── memory/             真源：一会话一文件
 │   └── mem_<agent>_<会话>.md
 ├── handoff_memory.md   全量视图：由 memory/ 重建，可随时刷新
-├── handoff_patches.md  判据句：唯一可进化处，需用户答「是」才追加
+├── handoff_patches.md  判据句规则源（每轮加载、非档案；无则跳过），需用户答「是」才追加
 └── handoff_report.md   产物：交接稿
 ```
 
@@ -228,7 +237,7 @@ MIT — see [LICENSE](LICENSE).
 - `memory/mem_<agent>_<会话>.md`：**真源**，一会话一文件，每轮只追加、不重写；会话被删或归档后自动转只读沉淀。
 - `handoff_memory.md`：**全量视图**，交接时由 `memory/` 重建，可随时刷新；「基于记忆」读的就是它。
 - `handoff_report.md`：**交接产物**，只有「交接」这个动作会写，给接手人看。
-- `handoff_patches.md`：**判据句**，本技能唯一会「进化」的地方——你指出产物问题并答「是」才追加一条可判断的规则。
+- `handoff_patches.md`：**判据句规则源**（每轮加载、非档案；文件不存在则跳过），本技能唯一会「进化」的地方——你指出产物问题并答「是」才追加一条可判断的规则。
 - `root.txt`：可选，一行绝对路径指向外部记忆库；指错即停，不会回退到项目内新建。
 
 #### 精细调用解读
@@ -238,18 +247,19 @@ MIT — see [LICENSE](LICENSE).
 | 动作 | 怎么触发 | 作用 |
 |---|---|---|
 | 交接 | 裸调用 `/handoff3`，或说 交接 / 生成 / 报告 / 归档 / 上下文接不上 … | **含自检六步** → 补缺口 → 重建视图 → 出报告。**唯一写报告的动作**，日常只需这一条 |
+| 更新记忆 | 更新记忆 / 刷新本会话记忆 / 补全记忆 / 同步记忆 / 修复落款 | **只读写当前会话那一个 mem 文件**：缺失就建、漏记就补、结构问题就地修；不动别的文件、不跑自检、不重建视图、不出报告。落款失效或怀疑该文件有问题/缺失时用 |
 | 自检 | 自检 / 检查记忆 / 修复记忆文件 … | 六步体检并修复记忆文件，不出报告；交接已含，只体检不出稿时才单独用 |
 | 基于记忆 | **须** `/handoff3` 前缀：基于记忆 / 按记忆 … | 刷新视图后读它作答，不写报告 |
 | 帮助 | 帮助 / help | 列出用法，不读写文件 |
 
-这些动作只是**用法规范，不是硬性规定**——你可以用任何方式调用本技能，自然语言直说也行。但请保持**口语化、词汇用法的稳定**：触发词和说法尽量固定（交接 / 自检 / 基于记忆），别频繁换词，这样技能每次都能稳定识别你的意图。
+这些动作只是**用法规范，不是硬性规定**——你可以用任何方式调用本技能，自然语言直说也行。但请保持**口语化、词汇用法的稳定**：触发词和说法尽量固定（交接 / 更新记忆 / 自检 / 基于记忆），别频繁换词，这样技能每次都能稳定识别你的意图。
 
 ### 结尾信号
 
 每轮**最后一条**面向用户的回复末尾二选一，缺一即视为规则未执行：
 
-- 写过记忆 → 落款（`本轮对话要点已自动加入 handoff3 记忆：` + 文件绝对路径 + token 读数）
-- 没写记忆 → `本轮未写入记忆，handoff3 未改动记忆文件。`（**这是默认**，拿不准就用它）
+- 写入或修复过 mem 文件 → 落款（`本轮对话要点已自动加入 handoff3 记忆：` + 文件绝对路径 + token 读数）；「更新记忆」修复了文件也算
+- 完全没碰 mem 文件 → `本轮未写入记忆，handoff3 未改动记忆文件。`（**这是默认**，拿不准就用它）
 
 范围只管最后一条回复：工具调用之间的过程话、过渡性短句不在范围内，不必附。
 
@@ -262,7 +272,7 @@ MIT — see [LICENSE](LICENSE).
 ```
 SKILL.md                              主文件：规则、动作、交接流程
 references/
-├── commands.md                       四个动作的调用形式、触发词、前缀规则与触发边界
+├── commands.md                       五个动作的调用形式、触发词、前缀规则与触发边界
 ├── schema.md                         命名与解析、文件源、条目格式、缺口判据、旧格式兼容
 ├── types.md                          八类语义判据、反例、冲突优先级
 ├── template.md                       交接稿骨架与缺口段固定格式

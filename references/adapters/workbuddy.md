@@ -29,6 +29,8 @@
 
 **环境变量只做定位加速，不单独定名**：`WORKBUDDY_CONFIG_DIR` / `CODEBUDDY_PROJECT_CONFIG_DIR` / `WORKBUDDY_DATA_FOLDER_NAME`。判定顺序 **先 `workbuddy-ai` 再 `.workbuddy`**（后者是前者的子串，顺序反了会把 `workbuddy-ai` 误判成 `workbuddy`）。与文件存在性冲突时**以文件为准**，并把冲突值写进缺口段。`CLIENT_INFO_PRODUCT_NAME` / `WORKBUDDY_PRODUCT_NAME` 只做核对。
 
+**写入边界（通用，不针对某个客户端）**：WorkBuddy 与 WorkBuddy AI 是独立 agent，各自记忆目录属于对方、**只读、永不写**；判定结果的用途只是定 `mem_` 文件名与"参考记忆"时的读取来源，不构成对 `$LIB` 外任何目录的写入授权。写入只限 `$LIB` 内（见 SKILL.md 硬规则 10）。
+
 ### 1.2 `session_id`
 
 取环境变量 `CODEBUDDY_SESSION_ID`，形如 `a224e4fd-1509-42b7-9eb2-7de8f4903e72`（十六进制 `8-4-4-4-12`）。
@@ -93,7 +95,7 @@ S6 缺档扫描只扫**当前 agent 的那个根**，不扫另一个（别人的
 
 ### 4.1 实际用到的
 
-1. **description 软自动触发**：常驻指针写在 `description` 里，模型每轮都能看见——四个动作的调用形式与触发词已外置到 `references/commands.md`，由模型按需加载。触发靠「常驻指针 + 动作表」，不是后台钩子，也不是靠超长 description 堆触发词。
+1. **description 软自动触发**：常驻指针写在 `description` 里，模型每轮都能看见——五个动作的调用形式与触发词已外置到 `references/commands.md`，由模型按需加载。触发靠「常驻指针 + 动作表」，不是后台钩子，也不是靠超长 description 堆触发词。
 2. **渐进披露**：`references/` 按需加载，不占常驻预算。
 3. **`model-call-parse` 取 token**：宿主私有增强，其他 agent 取不到就省略括号，功能不减。
 

@@ -16,7 +16,7 @@
 $LIB/
 ├── memory/            真源：一会话一文件
 ├── handoff_memory.md  全量视图（由 memory/ 重建）
-├── handoff_patches.md 判据句（唯一可进化处）
+├── handoff_patches.md 判据句规则源（每轮加载、非档案；无则跳过）
 └── handoff_report.md  交接产物
 ```
 
