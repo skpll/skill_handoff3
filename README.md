@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-blue.svg)](https://agentskills.io)
-[![Version](https://img.shields.io/badge/version-1.0.8-green.svg)](SKILL.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](SKILL.md)
 [![Ko-fi](https://img.shields.io/badge/Sponsor-Ko--fi-FF5E5B.svg)](https://ko-fi.com/skpll)
 [![Sponsor](https://img.shields.io/badge/Sponsor-IFDIAN-946ce6.svg)](https://ifdian.net/a/handoff3)
 
@@ -14,7 +14,12 @@
 
 ## English
 
-**Any questions, suggestions, or feedback while using it? Welcome to [join the official QQ group 801546098](https://qm.qq.com/q/sLZU77gjni)**.
+Any questions, suggestions, or feedback while using it? Welcome to:
+
+**[join the official QQ group: 801546098](https://qm.qq.com/q/sLZU77gjni)**
+
+**[email: two_fp@163.com](mailto:two_fp@163.com)**
+
 
 Cross-agent incremental session memory and handoff. Bookmark as you go; render a ready-to-use report with one command when you hand off. It helps you capture key decisions, content, events and so on, so you can hand off cleanly to another agent, a fresh context window, a teammate, or your future self six months down the road.
 
@@ -32,7 +37,7 @@ This skill uses progressive disclosure and loads files on demand — day-to-day 
 
 - **Native language**: the author writes in Chinese, so the rules are most accurate and lose the least in Chinese.
 - **Stability**: a single source of truth — no two language versions drifting apart, no one rule behaving two ways.
-- **Performance**: skill files enter the context every turn; making them bilingual burns extra tokens each turn without making the skill any more capable.
+- **Performance**: only the always-on `description` sits in context each turn; `SKILL.md` and `references/` load on demand, so a bilingual copy would burn tokens again at every activation without making the skill any more capable.
 - **Multilingual by nature**: agents read Chinese instructions as reliably as English ones, so the instruction language does not affect results. Need another language? Just ask the AI to translate it.
 - **Forced translation**: if you strongly want the skill files written to disk in a language of your choice, ask the AI to translate `SKILL.md` and the files under `references/`.
 
@@ -61,9 +66,17 @@ The skill has gone through three generations.
 
 The first two still hold value for semantic parsing, architecture design, and engineering reference, and will keep being updated. But their overall practicality is now poor, so they are not open-sourced for the time being.
 
+### What's new in 1.1.0
+
+- Action texts moved into `references/actions/` (handoff / update memory / self-check / help) and load only when that action fires — the always-on `SKILL.md` shrank by 21%.
+- A naming conflict (S2) now gets its own fixed gap item, "naming pending", instead of being squeezed into "suspected misattribution".
+- English trigger tightening: a bare single-word `rebuild` rebuilds the view only; `rebuild` inside a sentence still goes to a full handoff.
+- Update memory repairs a broken-name file in place instead of creating a second file for the same session.
+- The view rebuilds at exactly three moments; a pure memory turn never rebuilds it.
+
 ### Install
 
-Copy the skill folder into your host's skills directory (WorkBuddy: `~/.workbuddy/skills/`). First use creates `.handoff3/` at the project root; no manual initialization.
+Copy the skill folder into your host's skills directory — any host following the agentskills.io convention works (WorkBuddy: `~/.workbuddy/skills/`, Claude Code: `~/.claude/skills/`). First use creates `.handoff3/` at the project root; no manual initialization.
 
 To use an external library: write a single absolute path to the library root in `.handoff3/root.txt` at your project root (the skill reads only this line, no migrate command is provided). A wrong path stops with an error — it will not fall back to creating a new local library. Migration and backup are up to you.
 
@@ -97,11 +110,11 @@ For finer control — e.g. an audit without a report, or asking straight from me
 
 | Action | How to trigger | What it does |
 |---|---|---|
-| Handoff | Bare `/handoff3`, or say handoff / handover / wrap up / report / archive / lost context / rebuild … | **Includes all six self-check steps** → fill gaps → rebuild view → render report. **The only action that writes a report** — this is all you need day to day |
+| Handoff | Bare `/handoff3`, or say handoff / handover / wrap up / report / archive / lost context … | **Includes all six self-check steps** → fill gaps → rebuild view → render report. **The only action that writes a report** — this is all you need day to day. A bare single-word `rebuild`, or "rebuild view" / "refresh memory summary", only rebuilds the view: no gap-filling, no report |
 | Update memory | update memory / refresh memory / sync memory … | **Only reads/writes the current session's own `mem_` file**: create if missing, fill gaps, repair structure in place; touches no other file, runs no self-check, rebuilds no view, writes no report. Use when the footer fails or you suspect that one file is broken or missing |
 | Self-check | self-check / check memory / memory check / memory repair … | Six-step audit and repair, no report; handoff already includes it, use alone only for audit-without-report |
 | From memory | **Requires** `/handoff3` prefix: from memory / based on memory … | Refreshes the view if stale, then answers from it; writes no report |
-| Help | help | Prints the built-in usage guide, reads/writes no files |
+| Help | help | Prints the built-in usage guide, writes no files |
 
 These actions are **conventions, not hard rules**. You may invoke the skill any way you like — plain natural language included. Just keep the phrasing **colloquial and consistent**: stick to stable trigger words and vocabulary (e.g. "handoff", "update memory", "self-check", "from memory") rather than constantly inventing new ones, so the skill recognizes your intent reliably.
 
@@ -116,18 +129,21 @@ Only the last reply counts: process chatter and transitional one-liners between 
 
 ### Six self-check steps
 
-All six always run: S1 structure / S2 naming / S3 ownership / S4 reachability (a quiet period does not count as frozen) / S5 coverage / S6 orphans. Criteria and fixes are in [SKILL.md](SKILL.md) §6 and `references/selfcheck.md`. Self-check's write scope is limited: format and status words may cross files, but entry content is changed only in your own session's file.
+All six always run: S1 structure / S2 naming / S3 ownership / S4 reachability (a quiet period does not count as frozen) / S5 coverage / S6 missing files. Criteria and fixes are in `references/actions/selfcheck.md`; SKILL.md §6 only lists the six steps. Self-check's write scope is limited: format and status words may cross files, but entry content is changed only in your own session's file.
 
 ### Files
 
 ```
-SKILL.md                              main file: rules, actions, handoff flow
+SKILL.md                              main file: per-turn memory, action routing, shared rules
 references/
-├── commands.md                       the five actions: forms, triggers, prefix rules, boundaries
-├── schema.md                         naming & parsing, file sources, entry format, gap criteria, legacy compat
+├── actions/
+│   ├── handoff.md                    handoff flow: enumerate → self-check → fill gaps → rebuild view → render
+│   ├── update-memory.md              update memory: locate → repair structure → fill gaps → footer
+│   ├── selfcheck.md                  six self-check steps: criteria, fixes, false-positive guards
+│   └── help.md                       help text (Chinese + English, printed verbatim)
+├── schema.md                         naming & parsing, file sources, entry format, view rebuild, gap criteria, legacy compat
 ├── types.md                          eight semantic categories, counterexamples, conflict priority
 ├── template.md                       handoff report skeleton & fixed gap-section format
-├── selfcheck.md                      six self-check steps: criteria, fixes, false-positive guards
 └── adapters/
     ├── index.md                      five interfaces, contract, steps to add an agent
     ├── workbuddy.md                  WorkBuddy / WorkBuddy AI
@@ -138,6 +154,13 @@ references/
 ### Explicitly out of scope
 
 Topic groups and grouping algorithms, multi-tier budgets and token shrinking, post-hoc validation scripts, web editors, MCP/hooks, weight-scoring scorecards, DSPy/GEPA/DPO, reading large files whole, and **automatically merging multi-session files** (fragments are unified by the view; merging only introduces new attribution ambiguity).
+
+### Known limitations
+
+- **Scale**: verified on small libraries (2–3 files); libraries with dozens of `mem_` files and thousands of entries have not been benchmarked.
+- **Adapters**: only the WorkBuddy path has been exercised end to end; DSH (compressed records) and generic are specification-level.
+- **English reports**: English triggers and help text are tested; report section titles stay in Chinese by design (see above).
+- **Line endings**: repository content is LF via `.gitattributes`; a local working copy may differ until the host normalizes it.
 
 ### Support
 
@@ -163,7 +186,12 @@ MIT — see [LICENSE](LICENSE).
 
 ## 中文说明
 
-**使用中有任何问题、建议或反馈，欢迎[加入官方QQ群 801546098](https://qm.qq.com/q/sLZU77gjni)**。
+使用中有任何问题、建议或反馈，欢迎：
+
+**[加入官方QQ群: 801546098](https://qm.qq.com/q/sLZU77gjni)**
+
+**[邮件联系: two_fp@163.com](mailto:two_fp@163.com)**
+
 
 跨 agent 的会话记忆与交接技能。日常顺手记账，交接时一键成稿。可以辅助你记下关键决策、内容、事件等信息，以顺利交接给其他 agent、新的会话窗口、项目组的其他成员，或者半年后的自己。
 
@@ -181,7 +209,7 @@ MIT — see [LICENSE](LICENSE).
 
 - **母语**：作者用中文写作，规则用中文写最准确、损耗最小。
 - **稳定**：单一真源。不会出现中英两个版本各自漂移、同一条规则两种行为。
-- **性能**：技能文件每轮都进上下文，做成双语等于每轮多烧 token，却不会让技能更强。
+- **性能**：每轮常驻的只有 `description`，`SKILL.md` 与 `references/` 按需加载；做成双语等于每次激活都多烧一遍 token，却不会让技能更强。
 - **兼容多语言**：模型天然多语言，读中文指令和英文指令的执行效果一样，指令语言不影响结果。需要别的语言，让 AI 翻译即可。
 - **强制翻译**：如果你强烈希望技能文件以你所指定的语言落盘，可以让 AI 翻译 SKILL.md 和 references 中的文件。
 
@@ -210,9 +238,17 @@ MIT — see [LICENSE](LICENSE).
 
 第一版和第二版在语义解析、架构设计和工程参考方面仍具价值，会继续更新。但目前综合实用性非常差，暂不开源。
 
+### 1.1.0 变更
+
+- 四个动作正文移到 `references/actions/`（交接 / 更新记忆 / 自检 / 帮助），命中才加载；常驻的 `SKILL.md` 缩小 21%。
+- S2 命名冲突单列「命名待定」固定条目，不再硬塞进「疑似归属错位」。
+- 英文触发收紧：整条消息只有一个 `rebuild` 时只重建视图；出现在句子里仍算完整交接。
+- 「更新记忆」遇到同会话的损坏文件名时就地修，不再新建第二份。
+- 视图只在三个时机重建；纯记忆轮不重建。
+
 ### 安装
 
-技能目录放进宿主的技能目录即可（WorkBuddy 为 `~/.workbuddy/skills/`）。首次使用会在项目根建 `.handoff3/`，无需手动初始化。
+技能目录放进宿主的技能目录即可——任何遵循 agentskills.io 规范的宿主都适用（WorkBuddy 为 `~/.workbuddy/skills/`，Claude Code 为 `~/.claude/skills/`）。首次使用会在项目根建 `.handoff3/`，无需手动初始化。
 
 想放到外部记忆库：在项目根 `.handoff3/root.txt` 写一行库根的绝对路径即可（技能只读这一行，不提供迁移命令）。路径指错会报错停止，不会回退到项目内新建库；迁移与备份由用户自行处理。
 
@@ -246,11 +282,11 @@ MIT — see [LICENSE](LICENSE).
 
 | 动作 | 怎么触发 | 作用 |
 |---|---|---|
-| 交接 | 裸调用 `/handoff3`，或说 交接 / 生成 / 报告 / 归档 / 上下文接不上 … | **含自检六步** → 补缺口 → 重建视图 → 出报告。**唯一写报告的动作**，日常只需这一条 |
+| 交接 | 裸调用 `/handoff3`，或说 交接 / 生成 / 报告 / 归档 / 上下文接不上 … | **含自检六步** → 补缺口 → 重建视图 → 出报告。**唯一写报告的动作**，日常只需这一条。说「重建视图 / 刷新记忆汇总」只重建视图，不补缺口、不出报告 |
 | 更新记忆 | 更新记忆 / 刷新本会话记忆 / 补全记忆 / 同步记忆 / 修复落款 | **只读写当前会话那一个 mem 文件**：缺失就建、漏记就补、结构问题就地修；不动别的文件、不跑自检、不重建视图、不出报告。落款失效或怀疑该文件有问题/缺失时用 |
 | 自检 | 自检 / 检查记忆 / 修复记忆文件 … | 六步体检并修复记忆文件，不出报告；交接已含，只体检不出稿时才单独用 |
 | 基于记忆 | **须** `/handoff3` 前缀：基于记忆 / 按记忆 … | 刷新视图后读它作答，不写报告 |
-| 帮助 | 帮助 / help | 列出用法，不读写文件 |
+| 帮助 | 帮助 / help | 列出用法，不写文件 |
 
 这些动作只是**用法规范，不是硬性规定**——你可以用任何方式调用本技能，自然语言直说也行。但请保持**口语化、词汇用法的稳定**：触发词和说法尽量固定（交接 / 更新记忆 / 自检 / 基于记忆），别频繁换词，这样技能每次都能稳定识别你的意图。
 
@@ -265,18 +301,21 @@ MIT — see [LICENSE](LICENSE).
 
 ### 自检六个子步骤
 
-六步固定全执行（S1 结构 / S2 命名 / S3 归属 / S4 可达性〔静默期不算沉淀〕 / S5 覆盖 / S6 缺档），判据与修法见 [SKILL.md](SKILL.md) §6 与 `references/selfcheck.md`。自检的写操作本就受限：格式与状态词可跨文件，条目内容只改自己会话的文件。
+六步固定全执行（S1 结构 / S2 命名 / S3 归属 / S4 可达性〔静默期不算沉淀〕 / S5 覆盖 / S6 缺档），判据与修法见 `references/actions/selfcheck.md`；SKILL.md §6 只列六步名。自检的写操作本就受限：格式与状态词可跨文件，条目内容只改自己会话的文件。
 
 ### 文件
 
 ```
-SKILL.md                              主文件：规则、动作、交接流程
+SKILL.md                              主文件：每轮记忆、动作路由、共用规则
 references/
-├── commands.md                       五个动作的调用形式、触发词、前缀规则与触发边界
-├── schema.md                         命名与解析、文件源、条目格式、缺口判据、旧格式兼容
+├── actions/
+│   ├── handoff.md                    交接流程：枚举 → 自检 → 补缺口 → 重建视图 → 渲染
+│   ├── update-memory.md              更新记忆：定位 → 修结构 → 补缺口 → 落款
+│   ├── selfcheck.md                  自检六步的判据、修法、误判防范
+│   └── help.md                       帮助文案（中英各一份，逐字输出）
+├── schema.md                         命名与解析、文件源、条目格式、视图重建、缺口判据、旧格式兼容
 ├── types.md                          八类语义判据、反例、冲突优先级
 ├── template.md                       交接稿骨架与缺口段固定格式
-├── selfcheck.md                      自检六步的判据、修法、误判防范
 └── adapters/
     ├── index.md                      五个接口、契约、新增 agent 步骤
     ├── workbuddy.md                  WorkBuddy / WorkBuddy AI
@@ -287,6 +326,13 @@ references/
 ### 明确不做
 
 主题组与分组算法、多档预算与 token 收缩、事后校验脚本、网页编辑器、MCP/钩子、权重评分打分卡、DSPy/GEPA/DPO、整读大文件、**自动合并多会话文件**（碎片由视图统一，合并只会引入新的归属歧义）。
+
+### 已知限制
+
+- **规模**：只在 2–3 个文件的小库上验证过；几十个 `mem_` 文件、上千条条目的真实库尚未压测。
+- **适配器**：仅 WorkBuddy 路径做过端到端实测；DSH（压缩记录）与 generic 为规格级定义。
+- **英文报告**：英文触发与帮助文案已测；报告段落标题按设计固定为中文（见上）。
+- **换行**：仓库内容由 `.gitattributes` 固定为 LF，本地工作区在宿主规范化前可能不同。
 
 ### 支持
 
