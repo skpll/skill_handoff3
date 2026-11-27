@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-blue.svg)](https://agentskills.io)
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](SKILL.md)
+[![Version](https://img.shields.io/badge/version-1.1.1-green.svg)](SKILL.md)
 [![Ko-fi](https://img.shields.io/badge/Sponsor-Ko--fi-FF5E5B.svg)](https://ko-fi.com/skpll)
 [![Sponsor](https://img.shields.io/badge/Sponsor-IFDIAN-946ce6.svg)](https://ifdian.net/a/handoff3)
 
@@ -65,14 +65,6 @@ The skill has gone through three generations.
 - **Third generation · bookmark as you go**: each turn the model writes one memory entry with a verbatim quote; handoff merely reads a few `mem_` files and renders. With local semantic parsing offloaded, readability and usability improve substantially.
 
 The first two still hold value for semantic parsing, architecture design, and engineering reference, and will keep being updated. But their overall practicality is now poor, so they are not open-sourced for the time being.
-
-### What's new in 1.1.0
-
-- Action texts moved into `references/actions/` (handoff / update memory / self-check / help) and load only when that action fires — the always-on `SKILL.md` shrank by 21%.
-- A naming conflict (S2) now gets its own fixed gap item, "naming pending", instead of being squeezed into "suspected misattribution".
-- English trigger tightening: a bare single-word `rebuild` rebuilds the view only; `rebuild` inside a sentence still goes to a full handoff.
-- Update memory repairs a broken-name file in place instead of creating a second file for the same session.
-- The view rebuilds at exactly three moments; a pure memory turn never rebuilds it.
 
 ### Install
 
@@ -155,13 +147,6 @@ references/
 
 Topic groups and grouping algorithms, multi-tier budgets and token shrinking, post-hoc validation scripts, web editors, MCP/hooks, weight-scoring scorecards, DSPy/GEPA/DPO, reading large files whole, and **automatically merging multi-session files** (fragments are unified by the view; merging only introduces new attribution ambiguity).
 
-### Known limitations
-
-- **Scale**: verified on small libraries (2–3 files); libraries with dozens of `mem_` files and thousands of entries have not been benchmarked.
-- **Adapters**: only the WorkBuddy path has been exercised end to end; DSH (compressed records) and generic are specification-level.
-- **English reports**: English triggers and help text are tested; report section titles stay in Chinese by design (see above).
-- **Line endings**: repository content is LF via `.gitattributes`; a local working copy may differ until the host normalizes it.
-
 ### Support
 
 If handoff3 saves you time, you're welcome to buy me a coffee:
@@ -216,7 +201,7 @@ MIT — see [LICENSE](LICENSE).
 ### 快速使用
 
 1. 首先**裸调用 `/handoff3`**——不加任何触发词。一步到位（含自检六步 → 补缺口 → 重建视图 → 出报告）。
-2. 然后调用技能后，加入你的想法。推荐以“基于记忆”开头（但不强制），以增强效果。示例：
+2. 调用技能后，加入你的想法。推荐以「基于记忆」开头（但不强制），以增强效果。示例：
 
 `/handoff3 基于记忆，生成本周周报`
 
@@ -224,7 +209,7 @@ MIT — see [LICENSE](LICENSE).
 
 `/handoff3 基于记忆，当前解决的问题`
 
-`/handoff3 基于记忆，和 agent 的记忆，给我规划下周每日任务`
+`/handoff3 基于记忆，和 agent 的记忆一起，给我规划下周每日任务`
 
 详情参见 [用法](#用法)。
 
@@ -237,14 +222,6 @@ MIT — see [LICENSE](LICENSE).
 - **第三版 · 平时记账**：每轮产生实质结论时由模型自己写一条带原文引用的记忆，交接时只读几个 `mem_` 文件成稿。在减少本地语义解析的同时，可读性与可用性大幅提升。
 
 第一版和第二版在语义解析、架构设计和工程参考方面仍具价值，会继续更新。但目前综合实用性非常差，暂不开源。
-
-### 1.1.0 变更
-
-- 四个动作正文移到 `references/actions/`（交接 / 更新记忆 / 自检 / 帮助），命中才加载；常驻的 `SKILL.md` 缩小 21%。
-- S2 命名冲突单列「命名待定」固定条目，不再硬塞进「疑似归属错位」。
-- 英文触发收紧：整条消息只有一个 `rebuild` 时只重建视图；出现在句子里仍算完整交接。
-- 「更新记忆」遇到同会话的损坏文件名时就地修，不再新建第二份。
-- 视图只在三个时机重建；纯记忆轮不重建。
 
 ### 安装
 
@@ -326,13 +303,6 @@ references/
 ### 明确不做
 
 主题组与分组算法、多档预算与 token 收缩、事后校验脚本、网页编辑器、MCP/钩子、权重评分打分卡、DSPy/GEPA/DPO、整读大文件、**自动合并多会话文件**（碎片由视图统一，合并只会引入新的归属歧义）。
-
-### 已知限制
-
-- **规模**：只在 2–3 个文件的小库上验证过；几十个 `mem_` 文件、上千条条目的真实库尚未压测。
-- **适配器**：仅 WorkBuddy 路径做过端到端实测；DSH（压缩记录）与 generic 为规格级定义。
-- **英文报告**：英文触发与帮助文案已测；报告段落标题按设计固定为中文（见上）。
-- **换行**：仓库内容由 `.gitattributes` 固定为 LF，本地工作区在宿主规范化前可能不同。
 
 ### 支持
 

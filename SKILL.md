@@ -1,10 +1,10 @@
 ---
 name: handoff3
-description: 跨agent会话记忆与交接，边记边交。常驻：$LIB=项目根`.handoff3/root.txt`首行绝对路径，无则项目内`.handoff3`，指错停。每轮先读`$LIB/handoff_patches.md`（有则读、无则跳过，判据句对所有轮生效），再把实质结论追加进`$LIB/memory/mem_<agent>_<会话>.md`（空格换下划线，带agent/时间/类型/逐字quote）。写入只限`$LIB`内、其余不写（正向白名单，不穷举）；"参考某agent记忆"仅指读取。优先级：用户当轮指令>项目AGENTS.md>patches判据句>技能正文，用户答"是"的patch与AGENTS.md冲突时视为最新指令可覆盖。末条回复二选一落款：碰过mem文件（写入或修复）→落款（反引号绝对路径+token，取不到省括号），完全没碰→未写入提示（默认，拿不准用它）；语言随该条回复，拿不准用英文，模板§2.2。五动作（交接/更新记忆/自检/基于记忆/帮助）触发词与边界见正文§3；仅「基于记忆」须`/handoff3`前缀。
+description: 跨agent会话记忆与交接/自检（handoff/session memory）。$LIB=项目根`.handoff3/root.txt`首行绝对路径（无则项目内`.handoff3`），指错停。每轮读`$LIB/handoff_patches.md`，实质结论写进`$LIB/memory/mem_<agent>_<会话>.md`（空格→_）。压缩/摘要/跨轮后先重载正文再写，禁止凭印象。末条二选一落款：碰过mem（写入或修复）→反引号绝对路径（token可省），正文§2.2；没碰→未写入提示（默认）；语言随回复，拿不准英文。优先级：当轮指令>AGENTS.md>patches>正文；答“是”的patch与AGENTS.md冲突时覆盖之。只写`$LIB`内、其余不写；“参考某agent记忆”仅指读取。patches判据句对所有轮生效。条目须带时间/类型/主题/逐字quote，类型限八类或`[代码]`，必要`[出处]`。动作：交接/更新记忆/自检/基于记忆/帮助，见正文§3；仅「基于记忆」须`/handoff3`。agent名须现场判定、禁按库内文件名猜；一会话一文件，只追加不重写。
 license: MIT
 compatibility: 遵循 agentskills.io 规范，跨 Agent 通用。记忆流程只用宿主自带的文件读写与搜索（grep）能力，无配置层、无外部工具。数据默认写项目内 .handoff3/，可指向外部记忆库；对用户指定的会话记录只读。
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   breaks-from: "旧版 handoff（一 agent 一文件 + 水位行 → 一会话一文件 + 核对至）"
 ---
 
@@ -39,9 +39,9 @@ $LIB/
 
 `handoff_memory.md` 是派生汇总（只由 `memory/` 生成，任何动作都不回写源文件），**只在三个时机重建**：① 交接的「重建视图」节；②「基于记忆」发现视图缺失、或末条时间落后于任一 `mem_` 末条时间；③ 用户以「重建视图 / 重建记忆汇总 / 刷新全量记忆」触发轻入口（只重建，不补写、不出报告）。**纯记忆轮不重建**——不因为「换了窗口」「发了个继续」就刷产物。
 
-重建方式是覆盖写；构造规则（时间升序、同 quote 去重留最早、旧格式标记、不写回 `mem_`）统一见 [schema.md](references/schema.md) §2.4，本文件不复述。
+重建方式是覆盖写；构造规则（时间升序、同「时间 + quote」去重留最早、旧格式标记、不写回 `mem_`）统一见 [schema.md](references/schema.md) §2.4，本文件不复述。
 
-**库根可共用，库目录不可共用**：允许 `<库根>/project_a`、`<库根>/project_b`；**禁止**两个项目指向同一具体库目录（同名文件被同写、视图与报告互相覆盖且不报错）。迁移前目标已有 `mem_*.md` → 停止，不覆盖不合并。
+**库根可共用，库目录不可共用**：允许 `<库根>/project_a`、`<库根>/project_b`；**禁止**两个项目指向同一具体库目录（同名文件被同时写入、视图与报告互相覆盖且不报错）。迁移前目标已有 `mem_*.md` → 停止，不覆盖不合并。
 
 **文件数会增长，这是已知代价**：`/clear`、换窗口、新任务都换会话标识，几十个 `mem_` 文件是正常状态。处理方式三条，都不需人工干预：
 
@@ -51,7 +51,7 @@ $LIB/
 
 不要为「减少文件数」自动合并——那会抹掉溯源清晰这唯一好处，并把归属歧义重新引进来。
 
-## 2. 每轮记忆（轻 · 常驻 · 不加载本文件也要做）
+## 2. 每轮记忆（轻 · 常驻；写前照 §2.1 骨架，别凭印象）
 
 ### 2.1 判定、写入
 
@@ -61,7 +61,25 @@ $LIB/
 1. **判 agent 与库根**，再写。agent 名与当前会话标识按 [adapters/](references/adapters/index.md) 的接口取得——**禁止硬编码某家产品的 id 格式、禁止扫全局进程列表挑一个、禁止参考 `$LIB` 里已有文件名**（现存文件名与「文件源」段都是历史产物，可能一开始就标错了）。
 2. **写进该会话的文件**：`$LIB/memory/mem_<agent>_<会话>.md`。文件不存在就新建，带标题 + 文件源 + 正文（见 [schema.md](references/schema.md) §1–3）。
 3. **写前查状态**：目标文件「状态」为 `已沉淀` → 说明该来源已冻结，本轮不该往里写。**停下、报告、不动文件**。这条同时兜住「agent 判定错把内容写进别人文件」这类事故。**唯一例外**：用户显式发「更新记忆」并指名该文件、或当轮明确要求解冻——此时按 [actions/update-memory.md](references/actions/update-memory.md) 判断来源是否真可达，可达才解冻。
-4. 只追加本轮新内容，不回头重读、不重写旧条目（例外：①交接内嵌的自检、②更新记忆、③自检命中时可按需就地修本文件）。
+4. 只追加本轮新内容，不回头重读、不重写旧条目（例外：①交接内嵌的自检、②更新记忆、③自检命中时可按需就地修本文件、④按第 5 条回填本轮**自己刚写**条目的最终哈希与文件数）。
+5. **有 git 写操作就后置**：本轮若还要 commit / amend / rebase，记忆条目必须等最后一次 git 写操作完成后再写；先写就必须回填最终哈希与文件数——记成 amend 前的旧哈希等于记错。
+
+**写入骨架**（照抄。不许自创段名、小标题或编号分节——`## 提交内容` / `## 本次决定` 这类自由分节一律不合格）：
+
+```markdown
+# handoff3 会话记忆 · <agent 官方名>
+
+## 文件源
+
+- <agent> 会话：`<会话记录绝对路径>` · 状态 活跃 · 核对至 <YYYY-MM-DD HH:MM>
+
+## 正文
+
+- [YYYY-MM-DD HH:MM] [类型] 主题一句话
+  - [要点] 有并列项才写，一项一行
+  - [原文] 用户原话逐字片段
+  - [出处] 路径:行（可选）
+```
 
 **时间格式固定** `YYYY-MM-DD HH:MM`，不带时区后缀（详见 [schema.md](references/schema.md) §3）。从会话记录逐字重放恢复 mem 文件时照抄历史字节，不改写时间标签。
 
@@ -93,7 +111,7 @@ This turn's key points have been added to handoff3 memory:
 `<absolute path to $LIB/memory/mem_<agent>_<session>.md>` (Output tokens: <N>)
 ```
 
-路径运行时取绝对路径，**禁止写死项目路径**，用反引号包裹（避免 Windows 反斜杠被 Markdown 吃掉）。`<N>` 取宿主最新完整一轮的输出 token 读数，取不到就省略整个括号。
+路径运行时取绝对路径，**禁止写死项目路径**，用反引号包裹（避免 Windows 反斜杠被 Markdown 吃掉）。**路径必须另起一行独占**——与引导句挤在同一行视为不合格。`<N>` 取宿主最新完整一轮的输出 token 读数，取不到就省略整个括号。
 
 **B. 未写入提示**（本轮完全没碰 `mem_` 文件——帮助轮、纯分析轮；也是拿不准时的默认）：
 
@@ -152,7 +170,7 @@ No memory was written this turn; handoff3 did not change any memory file.
 7. **省 token**：禁止把会话记录整体读进上下文。查缺口、捞命中行、写几笔是必要开销；搬原料的大钱必须省。
 8. **冻结即只读**：状态 `已沉淀` 的文件除内容错别字外一律不动；只有用户明确指名才解冻。
 9. **无配置层**：本技能所有行为按规则固定执行，不读任何配置文件；用户当轮明确要求的，按硬规则 5 覆盖固定规则。
-10. **写入白名单**：所有写入只限 `$LIB` 内，`$LIB` 外一律不写——这是正向规则，不按 agent 名或目录名穷举；新增 agent / 新目录自动落入"禁止"集合。"参考某 agent 记忆"仅指读取，不构成写入授权。**唯一豁免**：用户当轮明确指定具体路径（如指名要改某个文件）时才可写 `$LIB` 外，但仍须遵守 personal_files 安全规则；用户的泛指（"和 agent 记忆一起用"之类）不构成授权。规则优先级：用户当轮指令 > 项目 AGENTS.md > `handoff_patches.md` 判据句 > 本技能正文；用户答"是"确认的 patch 与项目 AGENTS.md 冲突时视为用户最新指令、可覆盖 AGENTS.md。
+10. **写入白名单**：所有写入只限 `$LIB` 内，`$LIB` 外一律不写——这是正向规则，不按 agent 名或目录名穷举；新增 agent / 新目录自动落入「禁止」集合。「参考某 agent 记忆」仅指读取，不构成写入授权。**唯一豁免**：用户当轮明确指定具体路径（如指名要改某个文件）时才可写 `$LIB` 外，但仍须遵守 personal_files 安全规则；用户的泛指（「和 agent 记忆一起用」之类）不构成授权。规则优先级：用户当轮指令 > 项目 AGENTS.md > `handoff_patches.md` 判据句 > 本技能正文；用户答「是」确认的 patch 与项目 AGENTS.md 冲突时视为用户最新指令、可覆盖 AGENTS.md。
 
 ## 5. 交接（仅①）
 
@@ -180,6 +198,6 @@ agent 私有能力全在 `references/adapters/`，主流程只认五个接口：
 
 ## 9. 文件参考
 
-- `references/actions/` — 四个动作正文：[handoff](references/actions/handoff.md) / [update-memory](references/actions/update-memory.md) / [selfcheck](references/actions/selfcheck.md) / [help](references/actions/help.md)
+- `references/actions/` — 四个动作文件：[handoff](references/actions/handoff.md) / [update-memory](references/actions/update-memory.md) / [selfcheck](references/actions/selfcheck.md) / [help](references/actions/help.md)
 - [schema.md](references/schema.md) 结构定义 · [types.md](references/types.md) 八类判据 · [template.md](references/template.md) 报告骨架
 - `references/adapters/` — [接口与降级](references/adapters/index.md) + [workbuddy](references/adapters/workbuddy.md) / [deepseek-harness](references/adapters/deepseek-harness.md) / [generic](references/adapters/generic.md)
